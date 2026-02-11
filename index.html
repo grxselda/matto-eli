@@ -40,11 +40,6 @@
         .clickable-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
         .clickable-btn:active { transform: scale(0.95); }
 
-        /* Helper Transition Classes */
-        .fade-transition { transition: opacity 0.5s ease; }
-        .opacity-0 { opacity: 0; pointer-events: none; }
-        .opacity-1 { opacity: 1; pointer-events: auto; }
-
         /* --- ANIMATIONS --- */
         @keyframes slideUpNormal { from { opacity: 0; transform: translateY(100px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUpCenter { from { opacity: 0; transform: translate(-50%, -50%) translateY(100px); } to { opacity: 1; transform: translate(-50%, -50%) translateY(0); } }
@@ -80,7 +75,7 @@
         /* 3. CHALLENGE 1 PAGE */
         #challenge1-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; z-index: 15; }
         
-        /* Intro C1 Image (Hidden by default) */
+        /* Intro C1 Image (Hidden by default with transition for Fade In) */
         #c1-intro { 
             z-index: 20; opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
         }
@@ -94,14 +89,14 @@
             transform: translateX(-50%); width: 600px; height: auto; z-index: 5;
         }
 
-        /* Container Spinning Box (Revisi: Transparan) */
+        /* Container Spinning Box */
         #spinner-wrapper {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 1200px; height: 350px;
-            background: transparent; /* Hilangkan box hitam */
+            background: transparent;
             border: none;
-            overflow: hidden; /* Masking tetap ada */
+            overflow: hidden;
         }
 
         /* Garis Penunjuk Tengah */
@@ -124,7 +119,7 @@
         .spin-item {
             width: 200px; height: 200px;
             margin: 0 10px;
-            background-color: rgba(255,255,255,0.1); /* Sedikit background item biar keliatan kotak */
+            background-color: rgba(255,255,255,0.1);
             border-radius: 10px;
             flex-shrink: 0;
             display: flex; justify-content: center; align-items: center;
@@ -132,7 +127,7 @@
         }
         .spin-item img { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Tombol SPIN Image (Revisi) */
+        /* Tombol SPIN Image */
         #btn-spin-img {
             position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%);
             width: 200px; height: auto; z-index: 20;
@@ -143,26 +138,27 @@
 
         /* --- OVERLAYS --- */
         
-        /* Message Overlay */
+        /* Message Overlay (REVISI: Background Transparan) */
         .message-overlay {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             display: flex; justify-content: center; align-items: center;
             z-index: 100; cursor: pointer; opacity: 0;
             transition: opacity 0.5s ease;
-            background: rgba(0,0,0,0.5); /* Gelap dikit di belakang pesan supaya kebaca */
+            background: transparent; /* Background hitam dihilangkan */
         }
 
-        /* Result Overlay (Hasil Spin) */
+        /* Result Overlay (REVISI: Background Transparan) */
         #result-overlay {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             z-index: 200; /* Paling atas */
             display: none; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.7); /* Background gelap untuk fokus hasil */
+            background: transparent; /* Background hitam dihilangkan */
             cursor: pointer; opacity: 0; transition: opacity 0.5s ease;
         }
 
+        /* REVISI: Ukuran Hasil Diperbesar */
         #result-img {
-            max-width: 600px; max-height: 600px;
+            max-width: 850px; max-height: 850px; /* Diperbesar dari 600px */
             animation: popIn 0.5s forwards;
         }
         
@@ -241,7 +237,7 @@
         /* --- NAVIGATION --- */
         function startStageSequence() {
             const landing = document.getElementById('landing-page');
-            landing.style.opacity = '0'; // Fade out
+            landing.style.opacity = '0'; // Fade out Landing
             setTimeout(() => {
                 landing.style.display = 'none';
                 document.getElementById('stage-page').style.display = 'block';
@@ -264,6 +260,7 @@
                 c1Page.style.display = 'block';
 
                 // 2. Tampilkan C1 Intro (Fade In)
+                // CSS transition akan menangani efek fade in karena opacity berubah dr 0 ke 1
                 const c1Intro = document.getElementById('c1-intro');
                 c1Intro.style.opacity = '1';
 
@@ -346,7 +343,7 @@
             
             // Random Winner (Index 75 - 95)
             const randomWinIndex = Math.floor(Math.random() * (95 - 75 + 1)) + 75;
-            const winningNumber = (randomWinIndex % 20) + 1; // +1 karena F1 start dari 1 bukan 0
+            const winningNumber = (randomWinIndex % 20) + 1; 
 
             // Kalkulasi Posisi
             const containerWidth = 1200;
