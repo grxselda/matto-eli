@@ -5,39 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Web Project Fixed Layout</title>
     <style>
-        /* CSS Reset & Basic Setup */
+        /* CSS Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* Mencegah seleksi teks/gambar */
-            -webkit-user-drag: none; /* Mencegah drag gambar */
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
         body, html {
             width: 100%;
             height: 100%;
-            overflow: hidden; /* Mencegah scroll */
-            background-color: #000; /* Warna background default jika gambar belum load */
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            overflow: hidden;
+            background-color: #000;
         }
 
-        /* Container Utama (Kanvas Desain 1920x1080) */
+        /* BACKGROUND LAYER
+           Dipisah agar background bisa FULL layar (cover)
+           tanpa mempedulikan rasio, sehingga tidak ada ruang kosong.
+        */
+        #background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('BACKGROUND (1).webp');
+            background-size: cover; /* Kunci: Memenuhi layar */
+            background-position: center;
+            z-index: 0;
+        }
+
+        /* GAME CONTAINER (Area Kerja 1920x1080)
+           Ini adalah wadah tak terlihat untuk menaruh elemen sesuai koordinat px.
+           Wadah ini akan di-scale otomatis oleh Javascript.
+        */
         #game-container {
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
             width: 1920px;
             height: 1080px;
-            background-image: url('BACKGROUND (1).webp');
-            background-size: cover;
-            background-position: center;
-            transform-origin: center center; /* Scaling dari tengah */
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transform-origin: center center;
+            z-index: 1;
+            /* Border merah transparan untuk debug area kerja (bisa dihapus) */
+            /* border: 1px solid rgba(255, 0, 0, 0.3); */
         }
 
-        /* Kelas Utility untuk Gambar */
+        /* Kelas Utility Gambar */
         .absolute-img {
             position: absolute;
             display: block;
@@ -50,7 +66,6 @@
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 10;
         }
 
         /* Elemen 1: BG OPEN */
@@ -59,16 +74,16 @@
             top: 127.1px;
             width: 1421.2px;
             height: 825.7px;
-            z-index: 1; /* Layer paling bawah di landing */
+            z-index: 2;
         }
 
-        /* Elemen 2: JUDUL (Layer di atas BG OPEN) */
+        /* Elemen 2: JUDUL */
         #judul {
             left: 478.8px;
             top: 239.6px;
             width: 962.5px;
             height: 228.4px;
-            z-index: 2; /* Layer tengah */
+            z-index: 3;
         }
 
         /* Elemen 3: PLAY BUTTON */
@@ -77,35 +92,35 @@
             top: 610.6px;
             width: 329.8px;
             height: 329.8px;
-            z-index: 3; /* Layer paling atas */
+            z-index: 4;
             cursor: pointer;
             transition: transform 0.1s ease;
         }
 
         #btn-play:active {
-            transform: scale(0.95); /* Efek tekan */
+            transform: scale(0.95);
         }
 
-        /* --- HALAMAN STAGE (Awalnya disembunyikan) --- */
+        /* --- HALAMAN STAGE --- */
         #stage-page {
             width: 100%;
             height: 100%;
             position: absolute;
             top: 0;
             left: 0;
-            display: none; /* Hidden by default */
-            z-index: 20;
+            display: none; 
+            z-index: 10;
         }
 
-        /* Placeholder konten stage (bisa dihapus nanti) */
-        .stage-content {
+        .stage-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
             font-family: Arial, sans-serif;
-            font-size: 40px;
+            font-size: 50px;
+            color: white;
+            font-weight: bold;
             text-shadow: 2px 2px 4px #000;
         }
 
@@ -113,27 +128,23 @@
 </head>
 <body>
 
+    <div id="background-layer"></div>
+
     <div id="game-container">
         
         <div id="landing-page">
-            <img src="BG OPEN.webp" alt="Background Open" id="bg-open" class="absolute-img">
-            
-            <img src="JUDUL.webp" alt="Judul Game" id="judul" class="absolute-img">
-            
-            <img src="PLAY.webp" alt="Tombol Play" id="btn-play" class="absolute-img" onclick="goToStage()">
+            <img src="BG OPEN.webp" id="bg-open" class="absolute-img">
+            <img src="JUDUL.webp" id="judul" class="absolute-img">
+            <img src="PLAY.webp" id="btn-play" class="absolute-img" onclick="goToStage()">
         </div>
 
         <div id="stage-page">
-            <div class="stage-content">STAGE 1 STARTED</div> 
+            <div class="stage-text">STAGE 1 START</div>
         </div>
 
     </div>
 
     <script>
-        /* SCRIPT AUTO-SCALE 
-           Fungsi ini memastikan website selalu pas di layar (seperti game)
-           tanpa scroll bar, mempertahankan posisi elemen persis sesuai koordinat.
-        */
         function resizeGame() {
             const container = document.getElementById('game-container');
             const windowWidth = window.innerWidth;
@@ -142,33 +153,23 @@
             const designWidth = 1920;
             const designHeight = 1080;
 
-            // Hitung skala terbaik agar muat di layar tanpa memotong konten
+            // Hitung skala agar muat di layar (Fit)
             const scale = Math.min(
                 windowWidth / designWidth,
                 windowHeight / designHeight
             );
 
-            // Terapkan scaling
-            container.style.transform = `scale(${scale})`;
-            
-            // Karena scaling dilakukan dari tengah, margin mungkin perlu penyesuaian visual 
-            // tapi dengan display:flex di body, ini sudah otomatis di tengah.
+            // Terapkan skala dan posisikan tepat di tengah
+            container.style.transform = `translate(-50%, -50%) scale(${scale})`;
         }
 
-        // Jalankan saat loading dan saat window di-resize
+        // Panggil fungsi saat load dan resize
         window.addEventListener('load', resizeGame);
         window.addEventListener('resize', resizeGame);
 
-        /* LOGIC PERPINDAHAN HALAMAN
-        */
         function goToStage() {
-            // Sembunyikan Landing Page
             document.getElementById('landing-page').style.display = 'none';
-            
-            // Tampilkan Stage Page
             document.getElementById('stage-page').style.display = 'block';
-            
-            console.log("Transisi ke Stage berhasil.");
         }
     </script>
 </body>
