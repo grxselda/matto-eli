@@ -134,8 +134,7 @@
         /* Hover Actions (Buttons) */
         .item-actions {
             position: absolute; 
-            /* REVISI POSISI: Diturunkan ke 45px agar memotong area kartu */
-            top: 45px; 
+            top: 45px; /* Kebawah dikit */
             right: 0px; 
             display: none; 
             flex-direction: row; gap: 5px; z-index: 10;
@@ -150,28 +149,36 @@
         .action-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         .action-btn:active { transform: scale(0.9); }
 
-        /* Reference Image Kanan */
+        /* Reference Panel Kanan (Flex Column) */
         #picked-reference {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             margin-left: 50px;
+            gap: 15px; /* Jarak antar elemen vertikal */
         }
         
+        /* Tombol Back */
+        #btn-back-c1 {
+            width: 300px; height: auto; cursor: pointer;
+            transition: transform 0.1s;
+            margin-bottom: 10px;
+        }
+        #btn-back-c1:hover { transform: scale(1.05); }
+
         /* Header Gambar F-PICKED OP */
         #picked-op-img {
-            width: 450px; height: auto; margin-bottom: 20px; object-fit: contain;
+            width: 450px; height: auto; object-fit: contain;
         }
 
+        /* Gambar Kartu */
         #picked-img {
             width: 450px; height: 450px; 
             object-fit: contain;
             border: none; background: transparent; box-shadow: none;
         }
 
-        /* Info Box Bawah Tengah */
+        /* Info Box */
         #info-box-img {
-            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
-            width: 500px; height: auto; 
-            z-index: 5;
+            width: 450px; height: auto; 
         }
 
         /* --- OVERLAYS --- */
@@ -188,6 +195,15 @@
             background: transparent; cursor: pointer; opacity: 0; transition: opacity 0.5s ease;
         }
         #result-img { max-width: 850px; max-height: 850px; animation: popIn 0.5s forwards; }
+
+        /* Win Overlay (Final) */
+        #win-overlay {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            z-index: 300; display: none; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.8); /* Gelap sedikit agar teks terbaca */
+            cursor: pointer; opacity: 0; transition: opacity 0.5s ease;
+        }
+        #win-img { max-width: 1000px; animation: popIn 0.5s forwards; }
 
     </style>
 </head>
@@ -232,6 +248,10 @@
                 <img id="result-img" src="" alt="Result">
             </div>
 
+            <div id="win-overlay" onclick="finishChallenge1()">
+                <img id="win-img" src="WINTEXT-C1.webp" alt="You Win">
+            </div>
+
             <div id="c1-content">
                 <img src="TEXT-ST.webp" id="text-st" class="absolute-img">
                 <div id="spinner-wrapper">
@@ -247,12 +267,14 @@
                     </div>
 
                 <div id="picked-reference">
+                    <img src="BACK-C1.webp" id="btn-back-c1" onclick="backToSpin()">
+
                     <img src="F-PICKED OP.webp" id="picked-op-img" alt="Picked OP Header">
                     
                     <img id="picked-img" src="" alt="Picked Item">
-                </div>
 
-                <img src="INFO-C1.webp" id="info-box-img">
+                    <img src="INFO-C1.webp" id="info-box-img">
+                </div>
 
             </div>
 
@@ -363,7 +385,7 @@
             const track = document.getElementById('spinner-track');
             const itemWidth = 220; 
             const randomWinIndex = Math.floor(Math.random() * (95 - 75 + 1)) + 75;
-            pickedNumber = (randomWinIndex % 20) + 1; // Kartu User
+            pickedNumber = (randomWinIndex % 20) + 1; 
 
             const containerWidth = 1200;
             const scrollPosition = (randomWinIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
@@ -411,7 +433,7 @@
             }, 500);
         }
 
-        // --- ELIMINATION & GUESS WHO LOGIC ---
+        // --- ELIMINATION LOGIC ---
         function setupEliminationGrid() {
             const gridContainer = document.getElementById('grid-container');
             const pickedImg = document.getElementById('picked-img');
@@ -470,10 +492,70 @@
             }, 300);
         }
 
+        // Fungsi Cek Jawaban (Menang Instan)
         function checkAnswer(selectedNumber) {
-            // Langsung Menang saat tombol R ditekan
-            alert("SELAMAT! Anda berhasil menyelesaikan Challenge 1!");
-            // Disini bisa ditambahkan logika transisi ke Challenge 2
+            const winOverlay = document.getElementById('win-overlay');
+            winOverlay.style.display = 'flex';
+            setTimeout(() => { winOverlay.style.opacity = '1'; }, 50);
+        }
+
+        // Fungsi Klik Layar Menang -> Kembali ke Stage
+        function finishChallenge1() {
+            const winOverlay = document.getElementById('win-overlay');
+            const c1Page = document.getElementById('challenge1-page');
+            const stagePage = document.getElementById('stage-page');
+            const elimPhase = document.getElementById('elimination-phase');
+
+            // Fade Out Win Overlay
+            winOverlay.style.opacity = '0';
+
+            setTimeout(() => {
+                winOverlay.style.display = 'none';
+                
+                // Reset/Hide Challenge 1
+                elimPhase.style.display = 'none';
+                c1Page.style.display = 'none';
+
+                // Tampilkan Stage Lagi
+                stagePage.style.display = 'block';
+                setTimeout(() => { stagePage.style.opacity = '1'; }, 50);
+
+                // Reset Spinner Variables (Opsional)
+                hasSpun = false; 
+                document.getElementById('btn-spin-img').style.display = 'block';
+                document.getElementById('c1-content').style.display = 'block';
+                document.getElementById('c1-content').style.opacity = '0';
+
+            }, 500);
+        }
+
+        // Fungsi Tombol Kembali (Back to Spin) dengan LOGIKA RESET
+        function backToSpin() {
+            const elimPhase = document.getElementById('elimination-phase');
+            const c1Content = document.getElementById('c1-content');
+
+            elimPhase.style.opacity = '0';
+            setTimeout(() => {
+                elimPhase.style.display = 'none';
+                
+                c1Content.style.display = 'block';
+                // Force reflow
+                c1Content.offsetHeight; 
+                c1Content.style.opacity = '1';
+                
+                // --- RESET LOGIC ---
+                hasSpun = false;
+                document.getElementById('btn-spin-img').style.display = 'block';
+                
+                // Reset Posisi Spinner secara visual
+                const track = document.getElementById('spinner-track');
+                track.style.transition = 'none'; // Matikan animasi
+                track.style.transform = 'translateX(0)'; // Reset posisi
+                
+                // Re-build item agar animasi kemenangan hilang
+                setupSpinner(); 
+
+            }, 500);
         }
 
         /* Placeholder Functions */
