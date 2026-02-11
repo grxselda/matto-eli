@@ -12,6 +12,7 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-user-drag: none;
+            -webkit-tap-highlight-color: transparent; /* Hilangkan highlight biru di HP */
         }
 
         body, html {
@@ -21,7 +22,7 @@
             background-color: #000;
         }
 
-        /* BACKGROUND LAYER (WEBP) */
+        /* BACKGROUND LAYER (Fixed) */
         #background-layer {
             position: fixed;
             top: 0;
@@ -52,7 +53,6 @@
             pointer-events: auto; 
         }
 
-        /* Gambar Tengah (Message & Book) */
         .absolute-center-img {
             position: absolute;
             display: block;
@@ -61,7 +61,6 @@
             transform: translate(-50%, -50%);
         }
 
-        /* Tombol Interaktif */
         .clickable-btn {
             cursor: pointer;
             transition: transform 0.1s ease, filter 0.1s ease;
@@ -76,75 +75,112 @@
             transform: scale(0.95);
         }
 
-        /* --- ANIMATIONS --- */
+        /* --- ANIMATIONS DEFINITIONS --- */
+        
+        /* 1. Slide Up (Untuk elemen yang masuk) */
         @keyframes slideUpFade {
             0% { opacity: 0; transform: translateY(100px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
+        /* 2. Fade In/Out (Untuk Message & Transisi) */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* 3. Pulse (Untuk tombol Play) */
         @keyframes pulsePlay {
             0% { transform: scale(1); filter: brightness(1); }
             50% { transform: scale(1.05); filter: brightness(1.1); }
             100% { transform: scale(1); filter: brightness(1); }
         }
 
-        /* --- LANDING PAGE STYLES --- */
+        /* Class Helper untuk memicu animasi via JS */
+        .anim-slide-up {
+            opacity: 0; /* Awalnya hidden */
+            /* Animation fill mode forwards agar tetap di posisi akhir */
+            animation: slideUpFade 0.8s ease-out forwards; 
+        }
+
+        /* --- LANDING PAGE --- */
         #landing-page {
-            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10;
         }
 
         #bg-open {
-            left: 249.4px; top: 127.1px; z-index: 2;
+            left: 249.4px; top: 127.1px; 
             animation: slideUpFade 0.8s ease-out forwards; opacity: 0;
         }
 
         #judul {
-            left: 478.8px; top: 239.6px; z-index: 3;
+            left: 478.8px; top: 239.6px; 
             animation: slideUpFade 0.8s ease-out 0.3s forwards; opacity: 0;
         }
 
         #btn-play {
-            left: 795.1px; top: 530px; z-index: 4;
+            left: 795.1px; top: 530px; 
             animation: slideUpFade 0.8s ease-out 0.6s forwards, pulsePlay 2s infinite ease-in-out 1.5s;
-            opacity: 0; cursor: pointer; transition: filter 0.2s ease;
-        }
-        #btn-play:hover {
-             filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6)) brightness(1.2);
-             animation-play-state: paused; transform: scale(1.1);
+            opacity: 0;
         }
 
-        /* --- STAGE PAGE STYLES --- */
+        /* --- STAGE PAGE --- */
         #stage-page {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: none; /* Hidden awal */
+            z-index: 5;
+        }
+
+        /* Message Overlay (Wadah untuk Message) */
+        #message-overlay {
+            position: absolute;
             width: 100%;
             height: 100%;
-            position: absolute;
             top: 0;
             left: 0;
-            display: none; 
-            z-index: 10;
+            background-color: rgba(0,0,0,0.7); /* Background agak gelap supaya fokus ke pesan */
+            z-index: 100; /* Paling atas di stage */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer; /* Memberi tahu user bisa diklik */
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.5s ease;
         }
 
-        /* --- PENGATURAN LAYER (Z-INDEX) --- */
-        #stage-message { z-index: 1; }      /* Paling Bawah */
-        #stage-book { z-index: 2; }         /* Di atas Message, Di bawah Track (BARU) */
-        #stage-track { z-index: 3; }        /* Track menimpa Book */
-        .stage-text-group { z-index: 4; }   /* Text menimpa Track */
-        .stage-btn-group { z-index: 5; }    /* Button paling atas (supaya bisa diklik) */
+        /* Elemen Stage (Awalnya opacity 0, menunggu message ditutup) */
+        .stage-element {
+            opacity: 0;
+        }
 
-        /* Koordinat Aset Stage */
-        #stage-track { left: 430.8px; top: 378px; }
+        /* Z-Index & Posisi Stage */
+        #stage-book { z-index: 2; }
+        #stage-track { z-index: 3; left: 430.8px; top: 378px; }
         
-        /* Texts */
+        /* Texts & Buttons */
+        .stage-top-layer { z-index: 4; }
+        
         #text-c1 { left: 430.8px; top: 234.2px; }
         #text-c2 { left: 339.2px; top: 742.9px; }
         #text-c3 { left: 1251px; top: 186.4px; }
         #text-wp { left: 1062.2px; top: 700.9px; }
 
-        /* Buttons */
         #btn-c1 { left: 357.2px; top: 366.2px; }
         #btn-c2 { left: 650.9px; top: 643.2px; }
         #btn-c3 { left: 1109.7px; top: 312.5px; }
         #btn-prize { left: 1318.8px; top: 486.5px; }
+
+        /* --- TRANSITION SCREEN (Layar Hitam Transisi) --- */
+        #transition-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 999; /* Paling atas dari segalanya */
+            pointer-events: none; /* Agar tidak menghalangi klik saat transparan */
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
 
     </style>
 </head>
@@ -152,71 +188,126 @@
 
     <div id="background-layer"></div>
 
+    <div id="transition-screen"></div>
+
     <div id="game-container">
         
         <div id="landing-page">
             <img src="BG OPEN.webp" id="bg-open" class="absolute-img">
             <img src="JUDUL.webp" id="judul" class="absolute-img">
-            <img src="PLAY.webp" id="btn-play" class="absolute-img" onclick="goToStage()">
+            <img src="PLAY.webp" id="btn-play" class="absolute-img clickable-btn" onclick="startStageSequence()">
         </div>
 
         <div id="stage-page">
-            <img src="MESSAGE.webp" id="stage-message" class="absolute-center-img">
             
-            <img src="BOOK.webp" id="stage-book" class="absolute-center-img">
-            
-            <img src="TRACK.webp" id="stage-track" class="absolute-img">
-            
-            <img src="TEXT-C1.webp" id="text-c1" class="absolute-img stage-text-group">
-            <img src="TEXT-C2.webp" id="text-c2" class="absolute-img stage-text-group">
-            <img src="TEXT-C3.webp" id="text-c3" class="absolute-img stage-text-group">
-            <img src="TEXT-WP.webp" id="text-wp" class="absolute-img stage-text-group">
+            <div id="message-overlay" onclick="closeMessage()">
+                <img src="MESSAGE.webp" alt="Message" style="display: block;">
+            </div>
 
-            <img src="BUTTON-C1.webp" id="btn-c1" class="absolute-img clickable-btn stage-btn-group" onclick="goToChallenge1()">
-            <img src="BUTTON-C2.webp" id="btn-c2" class="absolute-img clickable-btn stage-btn-group" onclick="goToChallenge2()">
-            <img src="BUTTON-C3.webp" id="btn-c3" class="absolute-img clickable-btn stage-btn-group" onclick="goToChallenge3()">
-            <img src="PRIZE.webp" id="btn-prize" class="absolute-img clickable-btn stage-btn-group" onclick="goToPrize()">
+            <img src="BOOK.webp" id="stage-book" class="absolute-center-img stage-element">
+            
+            <img src="TRACK.webp" id="stage-track" class="absolute-img stage-element">
+            
+            <img src="TEXT-C1.webp" id="text-c1" class="absolute-img stage-element stage-top-layer">
+            <img src="TEXT-C2.webp" id="text-c2" class="absolute-img stage-element stage-top-layer">
+            <img src="TEXT-C3.webp" id="text-c3" class="absolute-img stage-element stage-top-layer">
+            <img src="TEXT-WP.webp" id="text-wp" class="absolute-img stage-element stage-top-layer">
+
+            <img src="BUTTON-C1.webp" id="btn-c1" class="absolute-img clickable-btn stage-element stage-top-layer" onclick="handleButtonClick(1)">
+            <img src="BUTTON-C2.webp" id="btn-c2" class="absolute-img clickable-btn stage-element stage-top-layer" onclick="handleButtonClick(2)">
+            <img src="BUTTON-C3.webp" id="btn-c3" class="absolute-img clickable-btn stage-element stage-top-layer" onclick="handleButtonClick(3)">
+            <img src="PRIZE.webp" id="btn-prize" class="absolute-img clickable-btn stage-element stage-top-layer" onclick="handleButtonClick('prize')">
         </div>
 
     </div>
 
     <script>
-        /* --- AUTO SCALING SCRIPT --- */
+        /* --- AUTO SCALING --- */
         function resizeGame() {
             const container = document.getElementById('game-container');
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            const designWidth = 1920;
-            const designHeight = 1080;
-            const scale = Math.min(windowWidth / designWidth, windowHeight / designHeight);
+            const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
             container.style.transform = `translate(-50%, -50%) scale(${scale})`;
         }
         window.addEventListener('load', resizeGame);
         window.addEventListener('resize', resizeGame);
 
-        /* --- PAGE NAVIGATION LOGIC --- */
-        
-        function goToStage() {
+        /* --- LOGIC ALUR GAME --- */
+
+        // 1. Saat tombol Play ditekan
+        function startStageSequence() {
+            // Animasi transisi keluar Landing Page (opsional, bisa langsung hilang)
             document.getElementById('landing-page').style.display = 'none';
-            document.getElementById('stage-page').style.display = 'block';
+            
+            // Tampilkan Container Stage
+            const stagePage = document.getElementById('stage-page');
+            stagePage.style.display = 'block';
+
+            // Tampilkan Message dengan Fade In
+            const msgOverlay = document.getElementById('message-overlay');
+            // Sedikit delay agar transisi display block terbaca browser
+            setTimeout(() => {
+                msgOverlay.style.opacity = '1';
+            }, 50);
         }
 
-        /* FUNGSI DUMMY - Nanti kita isi logika halaman selanjutnya */
-        function goToChallenge1() {
-            alert("Menuju Challenge 1!");
+        // 2. Saat Message diklik (Tutup Message -> Munculkan Aset Stage)
+        function closeMessage() {
+            const msgOverlay = document.getElementById('message-overlay');
+            
+            // Fade Out Message
+            msgOverlay.style.opacity = '0';
+            
+            // Setelah fade out selesai (500ms), sembunyikan overlay dan mulai animasi aset
+            setTimeout(() => {
+                msgOverlay.style.display = 'none';
+                animateStageAssetsIn();
+            }, 500);
         }
 
-        function goToChallenge2() {
-            alert("Menuju Challenge 2!");
+        // 3. Fungsi Animasi Masuk Aset Stage (Berurutan)
+        function animateStageAssetsIn() {
+            const book = document.getElementById('stage-book');
+            const track = document.getElementById('stage-track');
+            const buttonsAndTexts = document.querySelectorAll('.stage-element:not(#stage-book):not(#stage-track)');
+
+            // a. Munculkan Buku
+            book.classList.add('anim-slide-up');
+
+            // b. Munculkan Track (Delay dikit)
+            setTimeout(() => {
+                track.classList.add('anim-slide-up');
+            }, 200);
+
+            // c. Munculkan Text & Button (Delay lagi)
+            setTimeout(() => {
+                buttonsAndTexts.forEach(el => {
+                    el.classList.add('anim-slide-up');
+                });
+            }, 400);
         }
 
-        function goToChallenge3() {
-            alert("Menuju Challenge 3!");
+        // 4. Logika Transisi Saat Tombol Challenge Diklik
+        function handleButtonClick(target) {
+            const transitionScreen = document.getElementById('transition-screen');
+            
+            // a. Layar jadi gelap (Fade In Hitam)
+            transitionScreen.style.opacity = '1';
+
+            // b. Setelah gelap sempurna (500ms), pindah halaman
+            setTimeout(() => {
+                
+                // --- DISINI LOGIKA PINDAH HALAMAN ---
+                if(target === 1) alert("Masuk ke Challenge 1");
+                else if(target === 2) alert("Masuk ke Challenge 2");
+                else if(target === 3) alert("Masuk ke Challenge 3");
+                else if(target === 'prize') alert("Masuk ke Prize");
+
+                // c. (Opsional) Buka kembali layar hitam jika sudah di halaman baru
+                // transitionScreen.style.opacity = '0'; 
+
+            }, 500);
         }
 
-        function goToPrize() {
-            alert("Membuka Hadiah!");
-        }
     </script>
 </body>
 </html>
