@@ -21,26 +21,20 @@
             background-color: #000;
         }
 
-        /* BACKGROUND LAYER
-           Dipisah agar background bisa FULL layar (cover)
-           tanpa mempedulikan rasio, sehingga tidak ada ruang kosong.
-        */
+        /* BACKGROUND LAYER (Format WEBP) */
         #background-layer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('BACKGROUND (1).webp');
-            background-size: cover; /* Kunci: Memenuhi layar */
+            background-image: url('BACKGROUND (1).webp'); /* UBAH KE WEBP */
+            background-size: cover;
             background-position: center;
             z-index: 0;
         }
 
-        /* GAME CONTAINER (Area Kerja 1920x1080)
-           Ini adalah wadah tak terlihat untuk menaruh elemen sesuai koordinat px.
-           Wadah ini akan di-scale otomatis oleh Javascript.
-        */
+        /* GAME CONTAINER (1920x1080) */
         #game-container {
             position: absolute;
             top: 50%;
@@ -49,8 +43,27 @@
             height: 1080px;
             transform-origin: center center;
             z-index: 1;
-            /* Border merah transparan untuk debug area kerja (bisa dihapus) */
-            /* border: 1px solid rgba(255, 0, 0, 0.3); */
+        }
+
+        /* --- DEFINISI ANIMASI --- */
+        
+        /* 1. Animasi Masuk (Slide Up) */
+        @keyframes slideUpFade {
+            0% {
+                opacity: 0;
+                transform: translateY(100px); /* Mulai dari bawah */
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0); /* Ke posisi asli */
+            }
+        }
+
+        /* 2. Animasi Tombol Play (Pulse/Berdenyut) */
+        @keyframes pulsePlay {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.1); }
+            100% { transform: scale(1); filter: brightness(1); }
         }
 
         /* Kelas Utility Gambar */
@@ -68,37 +81,59 @@
             left: 0;
         }
 
-        /* Elemen 1: BG OPEN */
+        /* Elemen 1: BG OPEN (WEBP) */
         #bg-open {
             left: 249.4px;
             top: 127.1px;
             width: 1421.2px;
             height: 825.7px;
             z-index: 2;
+            
+            /* Animasi Masuk */
+            animation: slideUpFade 0.8s ease-out forwards;
+            opacity: 0; /* Mulai invisible sebelum animasi */
         }
 
-        /* Elemen 2: JUDUL */
+        /* Elemen 2: JUDUL (WEBP) */
         #judul {
             left: 478.8px;
             top: 239.6px;
             width: 962.5px;
             height: 228.4px;
             z-index: 3;
+
+            /* Animasi Masuk (Delay dikit biar keren) */
+            animation: slideUpFade 0.8s ease-out 0.3s forwards;
+            opacity: 0;
         }
 
-        /* Elemen 3: PLAY BUTTON */
+        /* Elemen 3: PLAY BUTTON (WEBP) */
         #btn-play {
             left: 795.1px;
-            top: 610.6px;
+            /* REVISI POSISI: Dinaikkan ke 530px agar lebih proporsional */
+            top: 530px; 
             width: 329.8px;
             height: 329.8px;
             z-index: 4;
             cursor: pointer;
-            transition: transform 0.1s ease;
+            
+            /* Animasi Masuk (Delay paling akhir) */
+            animation: slideUpFade 0.8s ease-out 0.6s forwards, 
+                       pulsePlay 2s infinite ease-in-out 1.5s; /* Pulse mulai setelah masuk */
+            opacity: 0;
+            transition: filter 0.2s ease; /* Transisi halus saat hover */
+        }
+
+        /* Efek Hover Spesifik Tombol Play */
+        #btn-play:hover {
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6)) brightness(1.2);
+            /* Matikan animasi pulse saat hover agar user fokus, atau biarkan tetap jalan */
+            animation-play-state: paused; 
+            transform: scale(1.1); /* Sedikit membesar saat hover */
         }
 
         #btn-play:active {
-            transform: scale(0.95);
+            transform: scale(0.95); /* Efek klik */
         }
 
         /* --- HALAMAN STAGE --- */
@@ -153,17 +188,15 @@
             const designWidth = 1920;
             const designHeight = 1080;
 
-            // Hitung skala agar muat di layar (Fit)
             const scale = Math.min(
                 windowWidth / designWidth,
                 windowHeight / designHeight
             );
 
-            // Terapkan skala dan posisikan tepat di tengah
+            // Container Scaling
             container.style.transform = `translate(-50%, -50%) scale(${scale})`;
         }
 
-        // Panggil fungsi saat load dan resize
         window.addEventListener('load', resizeGame);
         window.addEventListener('resize', resizeGame);
 
@@ -173,4 +206,4 @@
         }
     </script>
 </body>
-</html>
+</html>    
