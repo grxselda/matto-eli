@@ -3,130 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Web Project Fixed Layout</title>
+    <title>Web Project Fixed Layout v2 Stable</title>
     <style>
         /* --- CSS RESET & BASE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: transparent; }
         body, html { width: 100%; height: 100%; overflow: hidden; background-color: #000; }
 
-        /* --- BACKGROUND & CONTAINER --- */
+        /* --- BACKGROUND & MAIN CONTAINER (JANGAN DIUBAH) --- */
         #background-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('BACKGROUND (1).webp');
+            background-image: url('BACKGROUND.webp');
             background-size: cover; background-position: center; z-index: 0;
         }
 
         #game-container {
             position: absolute; top: 50%; left: 50%;
             width: 1920px; height: 1080px;
+            /* Transform ditangani oleh JS resizeGame */
             transform-origin: center center; z-index: 1;
-            overflow: hidden; /* Agar elemen yang keluar layar tidak terlihat */
+            overflow: hidden; 
         }
 
         /* --- UTILITY CLASSES --- */
         .absolute-img { position: absolute; display: block; pointer-events: auto; }
-        .absolute-center-img {
-            position: absolute; display: block;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
+        /* Kelas untuk memastikan elemen selalu di tengah container 1920x1080 */
+        .absolute-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
         .clickable-btn { cursor: pointer; transition: transform 0.1s ease, filter 0.1s ease; }
         .clickable-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
         .clickable-btn:active { transform: scale(0.95); }
-        .hidden { display: none; }
+        
+        /* Helper untuk menyembunyikan/menampilkan */
+        .d-none { display: none !important; }
+        .d-block { display: block !important; }
+        .d-flex { display: flex !important; }
+        .opacity-0 { opacity: 0 !important; }
+        .opacity-1 { opacity: 1 !important; }
 
-        /* --- ANIMATIONS --- */
-        @keyframes slideInUp { from { transform: translateY(1080px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideOutUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-1080px); opacity: 0; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        /* --- ANIMATIONS DEFINITIONS --- */
+        /* FADE */
+        .anim-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .anim-fade-out { animation: fadeOut 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* SLIDE UP FROM BOTTOM (Khusus C1 Intro) */
+        .anim-slide-up-enter { animation: slideUpEnter 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        @keyframes slideUpEnter {
+            from { transform: translate(-50%, 1080px); opacity: 0; } /* Mulai dari bawah layar */
+            to { transform: translate(-50%, -50%); opacity: 1; } /* Berhenti di tengah */
+        }
+
+        /* POP IN (Untuk Hasil Spin) */
         @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* Class untuk memicu animasi via JS */
-        .anim-slide-in-up { animation: slideInUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        .anim-slide-out-up { animation: slideOutUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        .anim-fade-out { animation: fadeOut 0.5s ease-out forwards; }
-        .anim-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-
-        /* --- PAGES --- */
+        /* --- PAGE STYLES --- */
         
         /* LANDING PAGE */
-        #landing-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
-        #bg-open, #judul, #btn-play { opacity: 0; } /* Set awal opacity 0 agar bisa dianimasikan masuk */
+        #landing-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; transition: opacity 0.5s; }
 
         /* STAGE PAGE */
-        #stage-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; z-index: 5; }
-        /* Container untuk elemen stage agar bisa digeser barengan saat transisi */
-        #stage-content-wrapper { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        #stage-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 5; transition: opacity 0.5s; }
 
         /* CHALLENGE 1 PAGE */
-        #challenge1-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; z-index: 15; }
+        #challenge1-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 15; }
         
-        /* Intro C1 Title */
+        /* Intro C1 Title Image */
         #c1-intro-img { 
-            position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            z-index: 20; opacity: 0; /* Awal hidden */
+            z-index: 20; 
+            /* Posisi awal di bawah layar sebelum animasi */
+            transform: translate(-50%, 1080px); 
         }
 
-        /* Spinning Area */
+        /* --- SPINNING COMPONENTS --- */
         #spinner-wrapper {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 1200px; height: 300px;
-            /* Background transparan total */
-            background: transparent; 
-            border: none;
-            overflow: hidden; /* Masking */
+            background: transparent; /* Tidak ada kotak hitam */
+            overflow: hidden;
         }
-
         #spinner-selector {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 4px; height: 100%; background: #FF0000;
-            z-index: 10; box-shadow: 0 0 15px red;
+            width: 4px; height: 100%; background: #FF0000; z-index: 10; box-shadow: 0 0 15px red;
         }
-
         #spinner-track {
             display: flex; align-items: center; height: 100%;
-            position: absolute; left: 0; top: 0;
-            will-change: transform;
+            position: absolute; left: 0; top: 0; will-change: transform;
         }
-
         .spin-item {
-            width: 200px; height: 200px; margin: 0 10px;
-            flex-shrink: 0; display: flex; justify-content: center; align-items: center;
+            width: 200px; height: 200px; margin: 0 10px; flex-shrink: 0; display: flex; justify-content: center; align-items: center;
         }
         .spin-item img { width: 100%; height: 100%; object-fit: contain; }
 
         /* Tombol SPIN Image */
         #btn-spin-img {
-            position: absolute; bottom: 150px; left: 50%;
-            transform: translateX(-50%);
-            width: 250px; height: auto; /* Sesuaikan ukuran gambar */
-            cursor: pointer; z-index: 20;
-            transition: transform 0.2s;
+            position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%);
+            z-index: 20; transition: transform 0.2s; cursor: pointer;
         }
         #btn-spin-img:hover { transform: translateX(-50%) scale(1.1); }
-        #btn-spin-img:active { transform: translateX(-50%) scale(0.9); }
 
-        /* --- OVERLAYS --- */
-        .overlay-bg {
+        /* --- OVERLAYS (MESSAGE & RESULT) --- */
+        .overlay-container {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             background: rgba(0,0,0,0.8); z-index: 100;
-            display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.5s;
+            display: none; /* Hidden by default */
+            justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.5s; cursor: pointer;
         }
-
-        /* Result Popup (Hasil Spin) */
-        #result-popup {
-            z-index: 200; /* Paling atas */
-            cursor: pointer;
-        }
+        
         #result-image {
             max-width: 600px; max-height: 600px;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: popIn 0.5s forwards;
         }
 
-        /* Text ST (Title di C1) */
+        /* Text Title di C1 */
         #text-st { left: 50%; top: 150px; transform: translateX(-50%); z-index: 5; }
 
     </style>
@@ -138,20 +129,20 @@
     <div id="game-container">
         
         <div id="landing-page">
-            <img src="BG OPEN.webp" id="bg-open" class="absolute-img">
-            <img src="JUDUL.webp" id="judul" class="absolute-img">
-            <img src="PLAY.webp" id="btn-play" class="absolute-img clickable-btn" onclick="startStageSequence()">
+            <img src="BG OPEN.webp" class="absolute-img" style="left: 249.4px; top: 127.1px;">
+            <img src="JUDUL.webp" class="absolute-img" style="left: 478.8px; top: 239.6px;">
+            <img src="PLAY.webp" class="absolute-img clickable-btn anim-fade-in" style="left: 795.1px; top: 530px; animation-delay: 0.5s; opacity: 0;" onclick="startStageSequence()">
         </div>
 
-        <div id="stage-page">
-            <div id="stage-content-wrapper">
-                <div id="msg-stage" class="overlay-bg" onclick="closeMessage('stage')">
-                    <img src="MESSAGE.webp" class="absolute-center-img">
-                </div>
+        <div id="stage-page" class="d-none opacity-0">
+            <div id="msg-stage" class="overlay-container" onclick="closeMessage('stage')">
+                <img src="MESSAGE.webp" class="absolute-center">
+            </div>
 
-                <img src="BOOK.webp" id="stage-book" class="absolute-center-img">
-                <img src="TRACK.webp" id="stage-track" class="absolute-img" style="left: 430.8px; top: 378px;">
-                
+            <img src="BOOK.webp" class="absolute-center" style="z-index: 2;">
+            <img src="TRACK.webp" class="absolute-img" style="left: 430.8px; top: 378px; z-index: 3;">
+            
+            <div style="z-index: 4;">
                 <img src="TEXT-C1.webp" class="absolute-img" style="left: 430.8px; top: 234.2px;">
                 <img src="TEXT-C2.webp" class="absolute-img" style="left: 339.2px; top: 742.9px;">
                 <img src="TEXT-C3.webp" class="absolute-img" style="left: 1251px; top: 186.4px;">
@@ -164,30 +155,26 @@
             </div>
         </div>
 
-        <div id="challenge1-page">
+        <div id="challenge1-page" class="d-none">
             
-            <img src="C1.webp" id="c1-intro-img">
+            <img src="C1.webp" id="c1-intro-img" class="absolute-center opacity-0">
 
-            <div id="msg-c1" class="overlay-bg" onclick="closeMessage('c1')">
-                <img src="MESSAGE-C1.webp" class="absolute-center-img">
+            <div id="msg-c1" class="overlay-container" onclick="closeMessage('c1')">
+                <img src="MESSAGE-C1.webp" class="absolute-center">
             </div>
 
-            <div id="c1-main-content" style="opacity: 0;">
+            <div id="c1-main-content" class="opacity-0">
                 <img src="TEXT-ST.webp" id="text-st" class="absolute-img">
                 
                 <div id="spinner-wrapper">
                     <div id="spinner-selector"></div>
-                    <div id="spinner-track">
-                        </div>
-                </div>
+                    <div id="spinner-track"></div> </div>
 
                 <img src="SPIN.webp" id="btn-spin-img" onclick="startSpin()">
             </div>
             
-            <div id="result-popup" class="overlay-bg" onclick="closeResult()">
-                <div id="result-container" style="position: relative;">
-                     <img id="result-image" src="" alt="Result">
-                </div>
+            <div id="result-popup" class="overlay-container" onclick="closeResult()">
+                 <img id="result-image" src="" alt="Result">
             </div>
 
         </div>
@@ -195,100 +182,96 @@
     </div>
 
     <script>
-        /* --- UTILS SCALING --- */
+        /* --- CORE: AUTO SCALING (JANGAN DIUBAH) --- */
         function resizeGame() {
             const container = document.getElementById('game-container');
+            // Hitung skala berdasarkan rasio layar vs desain 1920x1080
             const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            // Terapkan skala dari tengah
             container.style.transform = `translate(-50%, -50%) scale(${scale})`;
         }
-        window.addEventListener('load', () => { resizeGame(); initLanding(); });
+        // Jalankan saat load dan resize window
+        window.addEventListener('load', resizeGame);
         window.addEventListener('resize', resizeGame);
 
-        /* --- LANDING ANIMATION --- */
-        function initLanding() {
-            // Manual trigger animasi landing
-            const bg = document.getElementById('bg-open');
-            const title = document.getElementById('judul');
-            const btn = document.getElementById('btn-play');
-            
-            setTimeout(() => { bg.classList.add('anim-slide-in-up'); bg.style.opacity=1; }, 100);
-            setTimeout(() => { title.classList.add('anim-slide-in-up'); title.style.opacity=1; }, 400);
-            setTimeout(() => { btn.classList.add('anim-slide-in-up'); btn.style.opacity=1; }, 700);
-        }
+        /* --- HELPERS --- */
+        const getEl = (id) => document.getElementById(id);
+        const showEl = (el) => el.classList.remove('d-none');
+        const hideEl = (el) => el.classList.add('d-none');
 
-        /* --- STAGE LOGIC --- */
+        /* --- NAVIGATION LOGIC --- */
+
+        // 1. Landing -> Stage
         function startStageSequence() {
-            document.getElementById('landing-page').classList.add('anim-fade-out');
-            setTimeout(() => {
-                document.getElementById('landing-page').style.display = 'none';
-                document.getElementById('stage-page').style.display = 'block';
-                
-                // Animasi Masuk Stage
-                const stageContent = document.getElementById('stage-content-wrapper');
-                stageContent.style.animation = 'slideInUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+            const landing = getEl('landing-page');
+            const stage = getEl('stage-page');
 
-                // Buka Message Stage
-                setTimeout(() => openOverlay('msg-stage'), 800);
+            landing.classList.add('opacity-0'); // Fade out Landing
+            
+            setTimeout(() => {
+                hideEl(landing);
+                showEl(stage);
+                // Force Reflow agar transisi opacity jalan
+                stage.offsetHeight; 
+                stage.classList.remove('opacity-0'); // Fade in Stage
+
+                // Munculkan Message Stage setelah stage terlihat
+                setTimeout(() => openOverlay('msg-stage'), 600);
             }, 500);
         }
 
-        /* --- TRANSITION STAGE -> CHALLENGE 1 --- */
+        // 2. Stage -> Challenge 1 (Revised Transition)
         function goToChallenge1() {
-            // 1. Animasi Stage Keluar ke Atas
-            const stageContent = document.getElementById('stage-content-wrapper');
-            stageContent.classList.add('anim-slide-out-up');
+            const stage = getEl('stage-page');
+            const c1Page = getEl('challenge1-page');
+            const c1Intro = getEl('c1-intro-img');
 
-            // 2. Siapkan Halaman C1
-            const c1Page = document.getElementById('challenge1-page');
-            const c1Intro = document.getElementById('c1-intro-img');
-            
-            c1Page.style.display = 'block';
-            
-            // 3. Animasi Intro "C1" Masuk dari Bawah (Bersamaan dengan Stage keluar)
-            // Kita reset animasi dulu
-            c1Intro.style.animation = 'none';
-            c1Intro.offsetHeight; /* trigger reflow */
-            c1Intro.style.animation = 'slideInUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards';
-            c1Intro.style.opacity = '1';
+            // Langkah A: Fade Out Stage
+            stage.classList.add('opacity-0');
 
-            // 4. Timer untuk sequence selanjutnya
             setTimeout(() => {
-                document.getElementById('stage-page').style.display = 'none'; // Hide stage clean up
-                
-                // Diam sejenak (1 detik), lalu Fade Out C1 Intro
+                hideEl(stage);
+                showEl(c1Page);
+                setupSpinner(); // Siapkan spinner di background
+
+                // Langkah B: Animasi C1 Intro Masuk dari Bawah
+                c1Intro.classList.remove('opacity-0');
+                c1Intro.classList.add('anim-slide-up-enter');
+
+                // Langkah C: Diam sejenak, lalu Fade Out C1 Intro
                 setTimeout(() => {
-                    c1Intro.classList.add('anim-fade-out');
-                    
-                    // Setelah Fade Out C1 selesai, Buka Message C1
+                    c1Intro.classList.remove('anim-slide-up-enter'); // Hapus anim masuk
+                    c1Intro.classList.add('anim-fade-out'); // Tambah anim keluar
+
+                    // Langkah D: Setelah C1 Intro hilang, munculkan Message C1
                     setTimeout(() => {
+                        hideEl(c1Intro);
                         openOverlay('msg-c1');
                     }, 500);
-                }, 1500); // Waktu C1 Intro diam di layar
-            }, 1000); // Waktu animasi slide up
-            
-            setupSpinner(); // Siapkan gambar spinner di background
+
+                }, 2000); // Waktu C1 Intro tampil di layar sebelum fade out
+
+            }, 500); // Waktu tunggu stage fade out
         }
 
-        /* --- MESSAGE SYSTEM --- */
+        /* --- MESSAGE & OVERLAY SYSTEM --- */
         function openOverlay(id) {
-            const el = document.getElementById(id);
-            el.style.display = 'flex';
-            // Force reflow
-            el.offsetHeight;
-            el.style.opacity = '1';
+            const el = getEl(id);
+            showEl(el);
+            setTimeout(() => el.classList.remove('opacity-0'), 50);
         }
 
         function closeMessage(context) {
             const id = (context === 'stage') ? 'msg-stage' : 'msg-c1';
-            const el = document.getElementById(id);
-            el.style.opacity = '0';
+            const el = getEl(id);
+            el.classList.add('opacity-0');
+            
             setTimeout(() => {
-                el.style.display = 'none';
-                
-                // Jika menutup message C1, baru tampilkan konten spinner
+                hideEl(el);
+                // Jika menutup message C1, tampilkan konten utama C1 (Spinner dll)
                 if(context === 'c1') {
-                    const c1Content = document.getElementById('c1-main-content');
-                    c1Content.style.opacity = '1';
+                    const c1Content = getEl('c1-main-content');
+                    c1Content.classList.remove('opacity-0');
                     c1Content.classList.add('anim-fade-in');
                 }
             }, 500);
@@ -298,18 +281,14 @@
         let hasSpun = false;
 
         function setupSpinner() {
-            const track = document.getElementById('spinner-track');
+            const track = getEl('spinner-track');
             track.innerHTML = ''; 
-            // Buat loop panjang
-            const totalLoops = 5; 
-            const totalImages = 20;
-            for (let i = 0; i < totalLoops; i++) {
-                for (let j = 1; j <= totalImages; j++) {
+            // Buat 5 set pengulangan F1-F20
+            for (let i = 0; i < 5; i++) {
+                for (let j = 1; j <= 20; j++) {
                     const item = document.createElement('div');
                     item.className = 'spin-item';
-                    const img = document.createElement('img');
-                    img.src = `F${j}.webp`;
-                    item.appendChild(img);
+                    item.innerHTML = `<img src="F${j}.webp">`;
                     track.appendChild(item);
                 }
             }
@@ -318,49 +297,51 @@
         function startSpin() {
             if (hasSpun) return;
             hasSpun = true;
-            document.getElementById('btn-spin-img').style.display = 'none';
+            hideEl(getEl('btn-spin-img')); // Sembunyikan tombol spin
 
-            const track = document.getElementById('spinner-track');
-            const itemWidth = 220; // 200px + 20px margin
+            const track = getEl('spinner-track');
+            const itemWidth = 220; // Lebar item + margin
             
-            // Target Menang (Random)
+            // Tentukan pemenang random (di loop terakhir agar spin lama)
             const randomWinIndex = Math.floor(Math.random() * (95 - 75 + 1)) + 75;
-            // Hitung Result (Karena index array mulai 0, tapi nama file mulai F1)
-            // Modulo logic: Index 0 = F1, Index 19 = F20
+            // Hitung nomor file (F1-F20)
             const winningNumber = (randomWinIndex % 20) + 1; 
 
-            // Kalkulasi Posisi Center
+            // Kalkulasi posisi agar berhenti di tengah
             const containerWidth = 1200;
-            const scrollPosition = (randomWinIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
-            const randomOffset = Math.floor(Math.random() * 40) - 20; 
-            const finalPosition = scrollPosition + randomOffset;
+            const targetPos = (randomWinIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
+            // Tambah sedikit variasi acak
+            const randomOffset = Math.floor(Math.random() * 50) - 25; 
+            const finalPos = targetPos + randomOffset;
 
-            // Animasi Spin
+            // Mulai animasi CSS
             track.style.transition = 'transform 6s cubic-bezier(0.15, 0, 0.10, 1)'; 
-            track.style.transform = `translateX(-${finalPosition}px)`;
+            track.style.transform = `translateX(-${finalPos}px)`;
 
+            // Callback saat berhenti
             track.addEventListener('transitionend', () => {
                 showResult(winningNumber);
             }, { once: true });
         }
 
         function showResult(number) {
-            const popup = document.getElementById('result-popup');
-            const img = document.getElementById('result-image');
+            const img = getEl('result-image');
+            img.src = `F${number}.webp`; // Set gambar hasil
             
-            // Set source gambar pemenang
-            img.src = `F${number}.webp`;
+            // Hapus animasi lama lalu tambahkan lagi untuk memicu ulang
+            img.style.animation = 'none';
+            img.offsetHeight; /* trigger reflow */
+            img.style.animation = 'popIn 0.5s forwards';
             
             openOverlay('result-popup');
         }
 
         function closeResult() {
-            const popup = document.getElementById('result-popup');
-            popup.style.opacity = '0';
+            const popup = getEl('result-popup');
+            popup.classList.add('opacity-0');
             setTimeout(() => {
-                popup.style.display = 'none';
-                // Opsional: Redirect ke Challenge 2 atau Reset
-                alert("Lanjut ke Challenge berikutnya? (Implementasi logika selanjutnya disini)");
+                hideEl(popup);
+                alert("Silakan refresh untuk mencoba lagi atau lanjut ke challenge berikutnya (jika ada).");
             }, 500);
         }
 
