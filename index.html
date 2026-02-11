@@ -12,7 +12,7 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-user-drag: none;
-            -webkit-tap-highlight-color: transparent; /* Hilangkan highlight biru di HP */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
@@ -22,14 +22,14 @@
             background-color: #000;
         }
 
-        /* BACKGROUND LAYER (Fixed) */
+        /* BACKGROUND LAYER */
         #background-layer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('BACKGROUND (1).webp');
+            background-image: url('BACKGROUND.webp');
             background-size: cover;
             background-position: center;
             z-index: 0;
@@ -53,111 +53,86 @@
             pointer-events: auto; 
         }
 
+        /* Kelas khusus untuk elemen Tengah (Book & Message) */
         .absolute-center-img {
             position: absolute;
             display: block;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); /* Kunci agar tetap di tengah */
         }
 
         .clickable-btn {
             cursor: pointer;
             transition: transform 0.1s ease, filter 0.1s ease;
         }
+        .clickable-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .clickable-btn:active { transform: scale(0.95); }
 
-        .clickable-btn:hover {
-            transform: scale(1.05);
-            filter: brightness(1.1);
-        }
+        /* --- ANIMATIONS --- */
         
-        .clickable-btn:active {
-            transform: scale(0.95);
+        /* 1. Slide Up NORMAL (Untuk elemen yang pakai koordinat top/left biasa) */
+        @keyframes slideUpNormal {
+            from { opacity: 0; transform: translateY(100px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- ANIMATIONS DEFINITIONS --- */
-        
-        /* 1. Slide Up (Untuk elemen yang masuk) */
-        @keyframes slideUpFade {
-            0% { opacity: 0; transform: translateY(100px); }
-            100% { opacity: 1; transform: translateY(0); }
+        /* 2. Slide Up CENTER (KHUSUS elemen tengah agar tidak geser) */
+        @keyframes slideUpCenter {
+            from { opacity: 0; transform: translate(-50%, -50%) translateY(100px); }
+            to { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
         }
 
-        /* 2. Fade In/Out (Untuk Message & Transisi) */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-
-        /* 3. Pulse (Untuk tombol Play) */
+        /* 3. Pulse (Tombol Play) */
         @keyframes pulsePlay {
             0% { transform: scale(1); filter: brightness(1); }
             50% { transform: scale(1.05); filter: brightness(1.1); }
             100% { transform: scale(1); filter: brightness(1); }
         }
 
-        /* Class Helper untuk memicu animasi via JS */
-        .anim-slide-up {
-            opacity: 0; /* Awalnya hidden */
-            /* Animation fill mode forwards agar tetap di posisi akhir */
-            animation: slideUpFade 0.8s ease-out forwards; 
+        /* --- CLASS ANIMASI JS --- */
+        .anim-normal {
+            animation: slideUpNormal 0.8s ease-out forwards;
+        }
+        
+        .anim-center {
+            animation: slideUpCenter 0.8s ease-out forwards;
         }
 
         /* --- LANDING PAGE --- */
-        #landing-page {
-            width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10;
-        }
-
-        #bg-open {
-            left: 249.4px; top: 127.1px; 
-            animation: slideUpFade 0.8s ease-out forwards; opacity: 0;
-        }
-
-        #judul {
-            left: 478.8px; top: 239.6px; 
-            animation: slideUpFade 0.8s ease-out 0.3s forwards; opacity: 0;
-        }
-
-        #btn-play {
-            left: 795.1px; top: 530px; 
-            animation: slideUpFade 0.8s ease-out 0.6s forwards, pulsePlay 2s infinite ease-in-out 1.5s;
-            opacity: 0;
-        }
+        #landing-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
+        
+        #bg-open { left: 249.4px; top: 127.1px; animation: slideUpNormal 0.8s ease-out forwards; opacity: 0; }
+        #judul { left: 478.8px; top: 239.6px; animation: slideUpNormal 0.8s ease-out 0.3s forwards; opacity: 0; }
+        #btn-play { left: 795.1px; top: 530px; animation: slideUpNormal 0.8s ease-out 0.6s forwards, pulsePlay 2s infinite ease-in-out 1.5s; opacity: 0; }
 
         /* --- STAGE PAGE --- */
         #stage-page {
             width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-            display: none; /* Hidden awal */
-            z-index: 5;
+            display: none; z-index: 5;
         }
 
-        /* Message Overlay (Wadah untuk Message) */
+        /* MESSAGE OVERLAY (Revisi: Transparan) */
         #message-overlay {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background-color: rgba(0,0,0,0.7); /* Background agak gelap supaya fokus ke pesan */
-            z-index: 100; /* Paling atas di stage */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer; /* Memberi tahu user bisa diklik */
-            opacity: 0; /* Start hidden */
+            width: 100%; height: 100%; top: 0; left: 0;
+            background-color: transparent; /* TIDAK ADA BACKGROUND HITAM */
+            z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; opacity: 0;
             transition: opacity 0.5s ease;
         }
 
-        /* Elemen Stage (Awalnya opacity 0, menunggu message ditutup) */
-        .stage-element {
-            opacity: 0;
-        }
+        /* Elemen Stage (Awalnya Hidden) */
+        .stage-element { opacity: 0; }
 
-        /* Z-Index & Posisi Stage */
-        #stage-book { z-index: 2; }
+        /* Z-Index & Koordinat Presisi */
+        #stage-book { z-index: 2; } /* Center */
         #stage-track { z-index: 3; left: 430.8px; top: 378px; }
         
-        /* Texts & Buttons */
+        /* Layer Atas */
         .stage-top-layer { z-index: 4; }
-        
+
         #text-c1 { left: 430.8px; top: 234.2px; }
         #text-c2 { left: 339.2px; top: 742.9px; }
         #text-c3 { left: 1251px; top: 186.4px; }
@@ -168,18 +143,11 @@
         #btn-c3 { left: 1109.7px; top: 312.5px; }
         #btn-prize { left: 1318.8px; top: 486.5px; }
 
-        /* --- TRANSITION SCREEN (Layar Hitam Transisi) --- */
+        /* --- TRANSITION SCREEN --- */
         #transition-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            z-index: 999; /* Paling atas dari segalanya */
-            pointer-events: none; /* Agar tidak menghalangi klik saat transparan */
-            opacity: 0;
-            transition: opacity 0.5s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black; z-index: 999;
+            pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
         }
 
     </style>
@@ -187,7 +155,6 @@
 <body>
 
     <div id="background-layer"></div>
-
     <div id="transition-screen"></div>
 
     <div id="game-container">
@@ -201,8 +168,7 @@
         <div id="stage-page">
             
             <div id="message-overlay" onclick="closeMessage()">
-                <img src="MESSAGE.webp" alt="Message" style="display: block;">
-            </div>
+                <img src="MESSAGE.webp" class="absolute-center-img"> </div>
 
             <img src="BOOK.webp" id="stage-book" class="absolute-center-img stage-element">
             
@@ -231,80 +197,63 @@
         window.addEventListener('load', resizeGame);
         window.addEventListener('resize', resizeGame);
 
-        /* --- LOGIC ALUR GAME --- */
+        /* --- GAME LOGIC --- */
 
-        // 1. Saat tombol Play ditekan
         function startStageSequence() {
-            // Animasi transisi keluar Landing Page (opsional, bisa langsung hilang)
-            document.getElementById('landing-page').style.display = 'none';
+            // Hilangkan Landing Page
+            const landing = document.getElementById('landing-page');
+            landing.style.transition = 'opacity 0.5s';
+            landing.style.opacity = '0';
             
-            // Tampilkan Container Stage
-            const stagePage = document.getElementById('stage-page');
-            stagePage.style.display = 'block';
-
-            // Tampilkan Message dengan Fade In
-            const msgOverlay = document.getElementById('message-overlay');
-            // Sedikit delay agar transisi display block terbaca browser
             setTimeout(() => {
-                msgOverlay.style.opacity = '1';
-            }, 50);
+                landing.style.display = 'none';
+                
+                // Munculkan Stage & Message
+                const stagePage = document.getElementById('stage-page');
+                stagePage.style.display = 'block';
+
+                const msgOverlay = document.getElementById('message-overlay');
+                // Fade In Message
+                setTimeout(() => { msgOverlay.style.opacity = '1'; }, 50);
+            }, 500);
         }
 
-        // 2. Saat Message diklik (Tutup Message -> Munculkan Aset Stage)
         function closeMessage() {
             const msgOverlay = document.getElementById('message-overlay');
-            
-            // Fade Out Message
             msgOverlay.style.opacity = '0';
             
-            // Setelah fade out selesai (500ms), sembunyikan overlay dan mulai animasi aset
             setTimeout(() => {
                 msgOverlay.style.display = 'none';
                 animateStageAssetsIn();
             }, 500);
         }
 
-        // 3. Fungsi Animasi Masuk Aset Stage (Berurutan)
         function animateStageAssetsIn() {
             const book = document.getElementById('stage-book');
-            const track = document.getElementById('stage-track');
-            const buttonsAndTexts = document.querySelectorAll('.stage-element:not(#stage-book):not(#stage-track)');
+            const normalElements = document.querySelectorAll('.stage-element:not(#stage-book)');
 
-            // a. Munculkan Buku
-            book.classList.add('anim-slide-up');
+            // 1. Munculkan Buku (Pakai animasi CENTER agar tidak geser)
+            book.classList.add('anim-center');
 
-            // b. Munculkan Track (Delay dikit)
+            // 2. Munculkan elemen lain (Pakai animasi NORMAL) - Delay dikit
             setTimeout(() => {
-                track.classList.add('anim-slide-up');
-            }, 200);
-
-            // c. Munculkan Text & Button (Delay lagi)
-            setTimeout(() => {
-                buttonsAndTexts.forEach(el => {
-                    el.classList.add('anim-slide-up');
+                normalElements.forEach(el => {
+                    el.classList.add('anim-normal');
                 });
-            }, 400);
+            }, 300);
         }
 
-        // 4. Logika Transisi Saat Tombol Challenge Diklik
         function handleButtonClick(target) {
             const transitionScreen = document.getElementById('transition-screen');
-            
-            // a. Layar jadi gelap (Fade In Hitam)
-            transitionScreen.style.opacity = '1';
+            transitionScreen.style.opacity = '1'; // Layar Hitam Fade In
 
-            // b. Setelah gelap sempurna (500ms), pindah halaman
             setTimeout(() => {
+                if(target === 1) alert("Challenge 1");
+                else if(target === 2) alert("Challenge 2");
+                else if(target === 3) alert("Challenge 3");
+                else if(target === 'prize') alert("Prize");
                 
-                // --- DISINI LOGIKA PINDAH HALAMAN ---
-                if(target === 1) alert("Masuk ke Challenge 1");
-                else if(target === 2) alert("Masuk ke Challenge 2");
-                else if(target === 3) alert("Masuk ke Challenge 3");
-                else if(target === 'prize') alert("Masuk ke Prize");
-
-                // c. (Opsional) Buka kembali layar hitam jika sudah di halaman baru
-                // transitionScreen.style.opacity = '0'; 
-
+                // transitionScreen.style.opacity = '0'; // Buka lagi nanti kalau sudah pindah halaman
             }, 500);
         }
 
