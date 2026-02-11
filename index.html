@@ -40,17 +40,16 @@
         .clickable-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
         .clickable-btn:active { transform: scale(0.95); }
 
+        /* Helper Transition Classes */
+        .fade-transition { transition: opacity 0.5s ease; }
+        .opacity-0 { opacity: 0; pointer-events: none; }
+        .opacity-1 { opacity: 1; pointer-events: auto; }
+
         /* --- ANIMATIONS --- */
         @keyframes slideUpNormal { from { opacity: 0; transform: translateY(100px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUpCenter { from { opacity: 0; transform: translate(-50%, -50%) translateY(100px); } to { opacity: 1; transform: translate(-50%, -50%) translateY(0); } }
         @keyframes pulsePlay { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.05); filter: brightness(1.1); } }
-        
-        /* Animasi Kemenangan (Item terpilih) */
-        @keyframes itemWin {
-            0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 215, 0, 0); }
-            50% { transform: scale(1.15); box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); border: 2px solid gold; }
-            100% { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); border: 2px solid gold; }
-        }
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         .anim-normal { animation: slideUpNormal 0.8s ease-out forwards; }
         .anim-center { animation: slideUpCenter 0.8s ease-out forwards; }
@@ -58,13 +57,13 @@
         /* --- PAGES --- */
         
         /* 1. LANDING PAGE */
-        #landing-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
+        #landing-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; transition: opacity 0.5s ease; }
         #bg-open { left: 249.4px; top: 127.1px; animation: slideUpNormal 0.8s ease-out forwards; opacity: 0; }
         #judul { left: 478.8px; top: 239.6px; animation: slideUpNormal 0.8s ease-out 0.3s forwards; opacity: 0; }
         #btn-play { left: 795.1px; top: 530px; animation: slideUpNormal 0.8s ease-out 0.6s forwards, pulsePlay 2s infinite ease-in-out 1.5s; opacity: 0; }
 
         /* 2. STAGE PAGE */
-        #stage-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; z-index: 5; }
+        #stage-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; z-index: 5; transition: opacity 0.5s ease; }
         .stage-element { opacity: 0; }
         #stage-book { z-index: 2; }
         #stage-track { z-index: 3; left: 430.8px; top: 378px; }
@@ -81,30 +80,31 @@
         /* 3. CHALLENGE 1 PAGE */
         #challenge1-page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; z-index: 15; }
         
-        /* Wadah Konten C1 (Untuk Animasi Slide Up) */
-        #c1-content { opacity: 0; width: 100%; height: 100%; position: relative; }
+        /* Intro C1 Image (Hidden by default) */
+        #c1-intro { 
+            z-index: 20; opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+        }
+
+        /* Wadah Konten C1 */
+        #c1-content { opacity: 0; width: 100%; height: 100%; position: relative; transition: opacity 0.5s ease; }
 
         /* Text Title Spinning */
         #text-st {
-            /* Posisikan di atas spinner */
-            position: absolute; left: 50%; top: 200px; /* Sesuaikan Y */
+            position: absolute; left: 50%; top: 200px; 
             transform: translateX(-50%); width: 600px; height: auto; z-index: 5;
         }
 
-        /* Container Spinning Box */
+        /* Container Spinning Box (Revisi: Transparan) */
         #spinner-wrapper {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 1200px; height: 350px;
-            /* Background transparan hitam untuk wadah */
-            background: rgba(0, 0, 0, 0.6);
-            border: 4px solid #fff;
-            border-radius: 20px;
-            overflow: hidden; /* Masking */
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            background: transparent; /* Hilangkan box hitam */
+            border: none;
+            overflow: hidden; /* Masking tetap ada */
         }
 
-        /* Garis Penunjuk Tengah (Indikator Menang) */
+        /* Garis Penunjuk Tengah */
         #spinner-selector {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
             width: 4px; height: 100%; background: #FF0000;
@@ -112,61 +112,65 @@
             box-shadow: 0 0 10px red;
         }
 
-        /* Jalur Rel Gambar (Track) */
+        /* Jalur Rel Gambar */
         #spinner-track {
             display: flex; align-items: center;
             height: 100%;
             position: absolute; left: 0; top: 0;
-            /* Transisi dikontrol via JS */
             will-change: transform;
         }
 
-        /* Card Gambar (F1-F20) */
+        /* Card Gambar */
         .spin-item {
             width: 200px; height: 200px;
-            margin: 0 10px; /* Jarak antar item */
-            background-color: rgba(255,255,255,0.1);
+            margin: 0 10px;
+            background-color: rgba(255,255,255,0.1); /* Sedikit background item biar keliatan kotak */
             border-radius: 10px;
             flex-shrink: 0;
             display: flex; justify-content: center; align-items: center;
             overflow: hidden;
-            transition: transform 0.3s;
         }
         .spin-item img { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Tombol SPIN (Custom CSS karena belum ada aset) */
-        #btn-spin-start {
+        /* Tombol SPIN Image (Revisi) */
+        #btn-spin-img {
             position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%);
-            padding: 20px 60px; font-size: 30px; font-weight: bold; font-family: sans-serif;
-            background: #ffcc00; color: #000; border: none; border-radius: 50px;
-            cursor: pointer; z-index: 20;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            width: 200px; height: auto; z-index: 20;
+            cursor: pointer; transition: transform 0.1s;
         }
-        #btn-spin-start:hover { background: #ffe066; transform: translateX(-50%) scale(1.05); }
+        #btn-spin-img:hover { transform: translateX(-50%) scale(1.1); }
+        #btn-spin-img:active { transform: translateX(-50%) scale(0.9); }
 
-        /* --- SHARED COMPONENTS --- */
+        /* --- OVERLAYS --- */
         
-        /* Message Overlay (Universal) */
+        /* Message Overlay */
         .message-overlay {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             display: flex; justify-content: center; align-items: center;
             z-index: 100; cursor: pointer; opacity: 0;
             transition: opacity 0.5s ease;
-        }
-        
-        /* Transition Black Screen */
-        #transition-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: black; z-index: 999;
-            pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
+            background: rgba(0,0,0,0.5); /* Gelap dikit di belakang pesan supaya kebaca */
         }
 
+        /* Result Overlay (Hasil Spin) */
+        #result-overlay {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            z-index: 200; /* Paling atas */
+            display: none; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.7); /* Background gelap untuk fokus hasil */
+            cursor: pointer; opacity: 0; transition: opacity 0.5s ease;
+        }
+
+        #result-img {
+            max-width: 600px; max-height: 600px;
+            animation: popIn 0.5s forwards;
+        }
+        
     </style>
 </head>
 <body>
 
     <div id="background-layer"></div>
-    <div id="transition-screen"></div>
 
     <div id="game-container">
         
@@ -195,8 +199,14 @@
 
         <div id="challenge1-page">
             
-            <div id="msg-c1" class="message-overlay" onclick="closeMessage('c1')">
+            <img src="C1.webp" id="c1-intro" class="absolute-center-img">
+
+            <div id="msg-c1" class="message-overlay" onclick="closeMessage('c1')" style="display: none;">
                 <img src="MESSAGE-C1.webp" class="absolute-center-img">
+            </div>
+
+            <div id="result-overlay" onclick="closeResult()">
+                <img id="result-img" src="" alt="Result">
             </div>
 
             <div id="c1-content">
@@ -208,7 +218,7 @@
                         </div>
                 </div>
 
-                <button id="btn-spin-start" onclick="startSpin()">SPIN!</button>
+                <img src="SPIN.webp" id="btn-spin-img" onclick="startSpin()">
             </div>
 
         </div>
@@ -231,33 +241,44 @@
         /* --- NAVIGATION --- */
         function startStageSequence() {
             const landing = document.getElementById('landing-page');
-            landing.style.transition = 'opacity 0.5s'; landing.style.opacity = '0';
+            landing.style.opacity = '0'; // Fade out
             setTimeout(() => {
                 landing.style.display = 'none';
                 document.getElementById('stage-page').style.display = 'block';
+                // Trigger reflow agar opacity transition jalan
+                setTimeout(() => document.getElementById('stage-page').style.opacity = '1', 10);
+                
                 openMessage('msg-stage');
             }, 500);
         }
 
         function goToChallenge1() {
-            triggerTransition(() => {
-                document.getElementById('stage-page').style.display = 'none';
-                document.getElementById('challenge1-page').style.display = 'block';
-                
-                // Siapkan Spinner
-                setupSpinner();
-                
-                // Buka Pesan C1
-                openMessage('msg-c1');
-            });
-        }
-
-        function triggerTransition(callback) {
-            const screen = document.getElementById('transition-screen');
-            screen.style.opacity = '1';
+            const stage = document.getElementById('stage-page');
+            
+            // 1. Fade Out Stage
+            stage.style.opacity = '0';
+            
             setTimeout(() => {
-                callback();
-                screen.style.opacity = '0';
+                stage.style.display = 'none';
+                const c1Page = document.getElementById('challenge1-page');
+                c1Page.style.display = 'block';
+
+                // 2. Tampilkan C1 Intro (Fade In)
+                const c1Intro = document.getElementById('c1-intro');
+                c1Intro.style.opacity = '1';
+
+                // 3. Diam 1.5 detik, lalu Fade Out C1 Intro
+                setTimeout(() => {
+                    c1Intro.style.opacity = '0';
+                    
+                    // 4. Setelah C1 hilang, Munculkan Message
+                    setTimeout(() => {
+                        openMessage('msg-c1');
+                        setupSpinner(); // Siapkan spinner di background
+                    }, 500);
+
+                }, 2000); // Durasi C1 Intro tampil
+
             }, 500);
         }
 
@@ -265,6 +286,7 @@
         function openMessage(id) {
             const msg = document.getElementById(id);
             msg.style.display = 'flex';
+            // Delay dikit biar transisi opacity jalan
             setTimeout(() => { msg.style.opacity = '1'; }, 50);
         }
 
@@ -291,17 +313,14 @@
 
         function animateC1AssetsIn() {
             const content = document.getElementById('c1-content');
-            content.style.opacity = '0';
-            content.classList.add('anim-normal'); // Slide up satu grup konten C1
+            content.style.opacity = '1'; // Fade In content C1
         }
 
         /* --- SPINNING LOGIC (CS:GO STYLE) --- */
         function setupSpinner() {
             const track = document.getElementById('spinner-track');
-            track.innerHTML = ''; // Reset
+            track.innerHTML = ''; 
             
-            // Kita duplikasi F1-F20 beberapa kali agar tracknya panjang
-            // Total item misalnya 80. Spin akan berhenti di area akhir.
             const totalLoops = 5; 
             const totalImages = 20;
 
@@ -309,10 +328,8 @@
                 for (let j = 1; j <= totalImages; j++) {
                     const item = document.createElement('div');
                     item.className = 'spin-item';
-                    item.id = `spin-item-${i * totalImages + j}`; // Unique ID
-                    
                     const img = document.createElement('img');
-                    img.src = `F${j}.webp`; // Load F1.webp ... F20.webp
+                    img.src = `F${j}.webp`; 
                     item.appendChild(img);
                     track.appendChild(item);
                 }
@@ -320,41 +337,55 @@
         }
 
         function startSpin() {
-            if (hasSpun) return; // Mencegah klik 2x
+            if (hasSpun) return; 
             hasSpun = true;
-            document.getElementById('btn-spin-start').style.display = 'none'; // Sembunyikan tombol
+            document.getElementById('btn-spin-img').style.display = 'none'; // Sembunyikan tombol
 
             const track = document.getElementById('spinner-track');
             const itemWidth = 220; // 200px width + 20px margin
-            const totalItems = 5 * 20; // 100 items
             
-            // Tentukan Pemenang Secara Acak (Antara index 75 sampai 95 supaya spinnya lama)
+            // Random Winner (Index 75 - 95)
             const randomWinIndex = Math.floor(Math.random() * (95 - 75 + 1)) + 75;
-            
-            // Menghitung posisi agar item pemenang berhenti PERSIS di tengah container
-            // Rumus: -(PosisiItem) + (SetengahContainer) - (SetengahItem)
+            const winningNumber = (randomWinIndex % 20) + 1; // +1 karena F1 start dari 1 bukan 0
+
+            // Kalkulasi Posisi
             const containerWidth = 1200;
             const scrollPosition = (randomWinIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
-
-            // Tambahkan sedikit 'offset' acak di dalam kotak pemenang agar terlihat natural (tidak selalu dead center)
             const randomOffset = Math.floor(Math.random() * 40) - 20; 
             const finalPosition = scrollPosition + randomOffset;
 
-            // Animasi CSS Cubic Bezier untuk efek lambat di akhir
+            // Animasi Spin
             track.style.transition = 'transform 6s cubic-bezier(0.15, 0, 0.10, 1)'; 
             track.style.transform = `translateX(-${finalPosition}px)`;
 
             // Event saat spin berhenti
             track.addEventListener('transitionend', () => {
-                // Highlight pemenang
-                const winnerElement = track.children[randomWinIndex];
-                winnerElement.style.animation = 'itemWin 1s infinite alternate';
-                
-                // Tampilkan Alert atau Logic selanjutnya setelah menang
-                setTimeout(() => {
-                    alert(`Selamat! Kamu mendapatkan F${(randomWinIndex % 20) || 20}!`);
-                }, 1000);
+                showResult(winningNumber);
             }, { once: true });
+        }
+
+        function showResult(number) {
+            const resultOverlay = document.getElementById('result-overlay');
+            const resultImg = document.getElementById('result-img');
+            
+            resultImg.src = `F${number}.webp`;
+            
+            resultOverlay.style.display = 'flex';
+            // Reset animasi pop-in
+            resultImg.style.animation = 'none';
+            resultImg.offsetHeight; /* trigger reflow */
+            resultImg.style.animation = 'popIn 0.5s forwards';
+
+            setTimeout(() => { resultOverlay.style.opacity = '1'; }, 50);
+        }
+
+        function closeResult() {
+            const resultOverlay = document.getElementById('result-overlay');
+            resultOverlay.style.opacity = '0';
+            setTimeout(() => {
+                resultOverlay.style.display = 'none';
+                alert("Silakan refresh untuk mencoba lagi atau lanjut ke challenge berikutnya.");
+            }, 500);
         }
 
         /* Placeholder Functions */
